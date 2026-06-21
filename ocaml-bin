@@ -1,0 +1,64 @@
+#!/bin/sh
+
+ABS_PATH ()
+(
+    cd -- "$(dirname -- "$1")" && printf '%s/%s\n' "$(pwd)" "$(basename -- "$1")"
+)
+
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 file1.ml [file2.ml ... main.ml]" >&2
+    exit 1
+fi
+
+main_abs_path=$(ABS_PATH "${@: -1}")
+target_dir=$(dirname -- "$main_abs_path")
+
+if uname -s | grep -E -i 'MSYS|MINGW|CYGWIN' >/dev/null 2>&1; then
+    is_windows=true
+else
+    is_windows=false
+fi
+
+temp_dir=$(mktemp -d "${TMPDIR:-/tmp}/tmpdir.XXXXXXXX")
+if ! [ -d "$temp_dir" ]; then
+    echo "Failed to create temporary directory" >&2
+    exit 1
+fi
+trap 'rm -rf "$temp_dir"' EXIT INT TERM
+
+new_sources=""
+for src in "$@"; do
+    abs_src=$(ABS_PATH "$src")
+    if ! [ -f "$abs_src" ]; then
+        echo "No source file: $abs_src" >&2
+        exit 1
+    fi
+    
+    if ! command cp -f "$abs_src" "$temp_dir"; then
+        echo "Failed to copy source file: $abs_src" >&2
+        exit 1
+    fi
+    
+    filename=$(basename -- "$abs_src")
+    new_sources="$new_sources $temp_dir/$filename"
+    main_target="$temp_dir/$filename"
+done
+
+if [ "$is_windows" = true ]; then
+    exe_output="${main_target%.ml}.exe"
+else
+    exe_output="${main_target%.ml}"
+fi
+
+if ! ocamlc -o "$exe_output" $new_sources; then
+    echo "OCaml compilation failed" >&2
+    exit 1
+fi
+
+final_name=$(basename -- "$exe_output")
+if ! command mv -f "$exe_output" "$target_dir"; then
+    echo "Failed to move compiled binary to $target_dir" >&2
+    exit 1
+fi
+
+echo "Successfully compiled to $target_dir/$final_name"
