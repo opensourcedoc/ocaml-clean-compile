@@ -50,7 +50,7 @@ else
     exe_output="${main_target%.ml}"
 fi
 
-if ! ocamlc -o "$exe_output" $new_sources; then
+if ! ocamlopt -o "$exe_output" $new_sources; then
     echo "OCaml compilation failed" >&2
     exit 1
 fi

@@ -9,22 +9,32 @@ This project provides two lightweight shell scripts — `ocaml-bin` and `ocaml-j
 
 ## Features
 
-- **Clean builds**: No leftover `.cmi`, `.cmo`, or other temporary artifacts.
-- **Two targets**:
-  - `ocaml-bin` → build native executables
-  - `ocaml-js` → build JavaScript via `js_of_ocaml`
-- **Simple usage**: Just pass your source files; the scripts handle the rest.
+- **Clean builds**: Produces native executables without leaving behind `.cmi`, `.cmo`, or other temporary artifacts.
+- **Multiple targets**:
+  - `ocaml-std` → build with the OCaml standard library only
+  - `ocaml-core` → build with Jane Street’s Base, Stdio, and Core libraries
+  - `ocaml-js` → build JavaScript output via `js_of_ocaml`
+- **Simple usage**: Just provide your source files — the scripts take care of the rest.
 
 ## Requirements
 
-### Native Executable (`ocaml-bin`)
+### Native Executable (`ocaml-std`)
 
 - OCaml `4.14.4+` (recommended)
 - `opam`
 
+### Jane Street Enhanced Executable (`ocaml-core`)
+
+Includes the native requirements, plus:
+
+- `base`
+- `stdio`
+- `core`
+- `ocamlfind`
+
 ### JavaScript (`ocaml-js`)
 
-In addition to the native requirements:
+Includes the native requirements, plus:
 
 - `js_of_ocaml`
 - `js_of_ocaml-ppx`
@@ -35,7 +45,11 @@ In addition to the native requirements:
 ### Native Executable
 
 ```shell
-$ ocaml-bin lib1.ml lib2.ml lib3.ml main.ml
+$ ocaml-std lib1.ml lib2.ml lib3.ml main.ml
+```
+
+```shell
+$ ocaml-core lib1.ml lib2.ml lib3.ml main.ml
 ```
 
 ### JavaScript
