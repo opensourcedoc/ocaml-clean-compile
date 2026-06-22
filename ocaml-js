@@ -21,13 +21,38 @@ fi
 trap 'rm -rf "$temp_dir"' EXIT INT TERM
 
 new_sources=""
-for src in "$@"; do
-    abs_src=$(ABS_PATH "$src")
+while [ $# -gt 0 ]; do
+    arg="$1"
+
+    if [ "$arg" = "-h" ]; then
+        echo "Usage: $0 [-r requirement.txt] lib1.ml ... main.ml"
+        echo ""
+        echo "Option:"
+        echo "    -h    Show help info"
+        echo "    -r    Add requirement(s) in a text file"
+
+        exit 0
+    fi
+
+    if [ "$arg" = "-r" ]; then
+        shift
+
+        req="$1"
+        if ! [ -f "$req" ]; then
+            echo "No requirement file: $req" >&2
+            exit 1
+        fi
+
+        shift
+        continue
+    fi
+
+    abs_src=$(ABS_PATH "$arg")
     if ! [ -f "$abs_src" ]; then
         echo "No source file: $abs_src" >&2
         exit 1
     fi
-
+    
     if ! command cp -f "$abs_src" "$temp_dir"; then
         echo "Failed to copy source file: $abs_src" >&2
         exit 1
@@ -36,13 +61,26 @@ for src in "$@"; do
     filename=$(basename -- "$abs_src")
     new_sources="$new_sources $temp_dir/$filename"
 
-    # Last OCaml file is main.ml    
+    # Last OCaml file is main.ml
     main_target="$temp_dir/$filename"
+
+    shift
 done
 
 byte_output="${main_target%.ml}.byte"
 
-if ! ocamlfind ocamlc -package js_of_ocaml -package js_of_ocaml-ppx -linkpkg -o "$byte_output" $new_sources; then
+if [ -z "$req" ]; then
+    OCAML="ocamlfind ocamlc -package js_of_ocaml -package js_of_ocaml-ppx -linkpkg"
+else
+    OCAML="ocamlfind ocamlc -package js_of_ocaml -package js_of_ocaml-ppx"
+    PKGS=
+    while IFS= read -r line || [ -n "$line" ]; do
+        PKGS="${PKGS} -package $line"
+    done < "$req"
+    OCAML="$OCAML $PKGS -linkpkg"
+fi
+
+if ! $OCAML -o "$byte_output" $new_sources; then
     echo "OCaml compilation failed" >&2
     exit 1
 fi
@@ -57,5 +95,3 @@ if ! command mv -f "$js_output" "$target_dir"; then
     echo "Failed to move compiled JS file to $target_dir" >&2
     exit 1
 fi
-
-echo "Successfully compiled to $target_dir/$(basename -- "$js_output")"

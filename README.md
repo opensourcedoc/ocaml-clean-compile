@@ -32,6 +32,15 @@ Includes the native requirements, plus:
 - `core`
 - `ocamlfind`
 
+In the updated ocaml-clean-compile, `ocaml-core` is simply a thin wrapper around `ocaml-std`.  
+If you need to include additional packages, use the following command instead:
+
+```shell
+$ ocaml-std -r requirement.txt lib1.ml ... main.ml
+```
+
+Remember to list all dependencies in `requirement.txt` again, including `base`, `stdio`, `core`, and any other required packages.
+
 ### JavaScript (`ocaml-js`)
 
 Includes the native requirements, plus:
