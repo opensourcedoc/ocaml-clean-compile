@@ -59,7 +59,7 @@ while [ $# -gt 0 ]; do
     fi
     
     filename=$(basename -- "$abs_src")
-    new_sources="$new_sources $temp_dir/$filename"
+    new_sources="$new_sources $filename"
 
     # Last OCaml file is main.ml
     main_target="$temp_dir/$filename"
@@ -80,7 +80,7 @@ else
     OCAML="$OCAML $PKGS -linkpkg"
 fi
 
-if ! $OCAML -o "$byte_output" $new_sources; then
+if ! $(cd -- "$temp_dir" && $OCAML -o "$byte_output" $new_sources); then
     echo "OCaml compilation failed" >&2
     exit 1
 fi
