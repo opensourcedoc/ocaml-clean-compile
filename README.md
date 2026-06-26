@@ -5,7 +5,7 @@ Compile OCaml code without leaving behind temporary files.
 ## Overview
 
 The OCaml compiler often generates intermediate files during compilation, which developers must clean up manually.  
-This project provides two lightweight shell scripts — `ocaml-bin` and `ocaml-js` — that compile OCaml code in a system temporary directory and automatically remove all intermediate files once the build is complete.
+This project provides three lightweight shell scripts — `ocaml-std`, `ocaml-core` and `ocaml-js` — that compile OCaml code in a system temporary directory and automatically remove all intermediate files once the build is complete.
 
 ## Features
 
@@ -54,18 +54,27 @@ Includes the native requirements, plus:
 ### Native Executable
 
 ```shell
-$ ocaml-std lib1.ml lib2.ml lib3.ml main.ml
+$ ocaml-std lib.mli lib.ml main.ml
 ```
 
 ```shell
-$ ocaml-core lib1.ml lib2.ml lib3.ml main.ml
+$ ocaml-core lib.mli lib.ml main.ml
 ```
 
 ### JavaScript
 
 ```shell
-$ ocaml-js lib1.ml lib2.ml lib3.ml main.ml
+$ ocaml-js lib.mli lib.ml main.ml
 ```
+
+### Include Additional Packages
+
+```shell
+$ ocaml-std -r requirement.txt lib.mli lib.ml main.ml
+```
+
+List each dependency on a separate line in `requirements.txt`.  
+Refer to `core.txt` for formatting guidance.
 
 ## Non-Goal
 
